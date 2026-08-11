@@ -7,25 +7,25 @@ Purpose:
 
 Author: LN
 """
+import csv
 from pathlib import Path
 
-#read the ticket file and returns its lines.
+
+# Read the ticket file and return ticket records.
 def read_ticket_file(ticket_file_path: Path):
 
-    """Opens a file and returns its lines as a list."""    
+    """Opens a CSV file and returns ticket records as a list of dictionaries."""
+
     try:
         
-        with open(ticket_file_path, "r", encoding="utf-8") as file:
-            return file.readlines()            
+        with open(ticket_file_path, "r", encoding="utf-8", newline="") as file:
+            reader = csv.DictReader(file)
+            return list(reader)            
 
     except FileNotFoundError:
         print(f"Error: The file '{ticket_file_path}' does not exist.")
         return None
 
-def display_ticket_records(lines):  
-    if lines is not None:
-        for line in lines:
-            print(line)
 
 def main():   
 
@@ -35,21 +35,25 @@ def main():
     # Go up one level to the project root, then into the data directory./
     ticket_file_path  = current_dir.parent / "data" / "tickets.csv"  
     
-    # 1. Read the ticket file
-    lines = read_ticket_file(ticket_file_path)
+    # 1. Read and parse the ticket data.
+    tickets = read_ticket_file(ticket_file_path)
         
-    if lines is None:
+    if tickets is None:
         return
     
-    # 2. If file was found, print the header and display the ticket file contents.
+    # 2. Display the ticket records.
     print("=" * 34)
     print(" AI Ticket Assistant v0.1")
     print("=" * 34)
-    print()    
-    
-    display_ticket_records(lines)
-      
-                       
+    print()  
+
+    # 3. display the ticket data
+    for ticket in tickets:
+        print(ticket["Ticket ID"])
+        print(ticket["Priority"])
+        print(ticket["Application"])
+        print(ticket["Description"])
+                   
       
 # Standard entry point to run the program
 if __name__ == "__main__":
