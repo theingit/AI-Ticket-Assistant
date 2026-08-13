@@ -15,6 +15,7 @@ from pathlib import Path
 # Define required column headers
 REQUIRED_FIELDS = ["Ticket ID", "Priority", "Application", "Description"]
 TICKET_PRIORITIES = ("High", "Medium", "Low")
+#TICKET_CATEGORY = ("Payment Issue", "HR / Payroll", "Email Support", "OTHER")
 
 # Read the ticket file, validate and return ticket records.
 def validate_and_parse_csv(ticket_file_path: Path):
@@ -76,12 +77,65 @@ def validate_and_parse_csv(ticket_file_path: Path):
         print(f"Error: The file '{ticket_file_path}' does not exist.")
         return None
 
-#def validate_ticket(ticket):
-    #validate required fields, priority, identify invalid tickets, keep valid and invalid data distinguishable
-    #return whether the ticket is valid and, eventually, an explanation of what's wrong.
+def categorize_ticket(description):
 
-    #return
+    desc_lower = description.lower()
 
+    # 1. Check for Payment Issue
+    if any(keyword in desc_lower for keyword in ("payment", "transaction", "submit")):    
+        return "Payment Issue"
+
+    # 2. Check for HR / Payroll system issues    
+    elif any(keyword in desc_lower for keyword in ("payslip", "salary", "hr")):    
+        return "HR / Payroll"
+
+    # 3. Check for Email Support 
+    elif any(keyword in desc_lower for keyword in ("email", "signature", "mail")):    
+        return "Email Support"
+
+    # 4. Check for Access & Security issues
+    elif any(keyword in desc_lower for keyword in ("password", "login", "reset", "access denied")):
+    #elif "password" in desc_lower or "login" in desc_lower or "access denied" in desc_lower:
+        return "Access & Security"
+        
+    # 5. Check for Hardware issues
+    elif any(keyword in desc_lower for keyword in ("monitor", "printer", "laptop", "computer")):
+        return "Hardware"
+        
+    # 6. Check for Software/Application errors
+    elif any(keyword in desc_lower for keyword in ("crash", "bug", "error code")):
+        return "Software Error"
+        
+    # 7. Check for Network issues
+    elif any(keyword in desc_lower for keyword in ("wifi", "vpn", "internet slow")):
+        return "Network"
+        
+    # 8. Default category if no keywords match
+    else:
+        return "General Inquiry"    
+
+def determine_potential_impact(priority, application, description):
+    desc_lower = description.lower()
+
+    # 1. CRITICAL IMPACT: High priority on core business systems or major outages
+    critical_apps = {"crm", "erp", "payment system", "production"} #must be small letter bcoz desc.lower()
+    is_core_app = application.lower() in critical_apps
+    is_outage = "multiple users" in desc_lower or "down" in desc_lower or "outage" in desc_lower or "crash" in desc_lower
+    
+    if priority == "High" and (is_core_app or is_outage):
+        return "Critical"
+        
+    # 2. HIGH IMPACT: High priority general tasks OR Medium priority on core systems
+    elif priority == "High" or (priority == "Medium" and is_core_app):
+        return "High"
+        
+    # 3. MEDIUM IMPACT: Medium priority general tasks OR Low priority security issues
+    elif priority == "Medium" or "security" in desc_lower or "password" in desc_lower:
+        return "Medium"
+        
+    # 4. LOW IMPACT: Low priority non-core systems
+    else:
+        return "Low"
 
 def main():   
 
@@ -104,13 +158,27 @@ def main():
     if tickets is None:
         return
     
-    # 3. display the ticket data
+    # 3. Categorize tickets, determine potential impact, and display the analysis.
     for ticket in tickets:
-        #print(ticket) #print as dictionary        
+        #print(ticket) #print(ticket) prints data as dictionary    
+        
+        #Call categorize_ticket to categorize the ticket.
+        ticket["Category"] = categorize_ticket(ticket["Description"])
+
+        #Call determine_potential_impact to determine the impact
+        ticket["Potential Impact"] = determine_potential_impact(
+            priority=ticket["Priority"],
+            application=ticket["Application"],
+            description=ticket["Description"]        
+        )
+        
+        # Display the enhanced ticket information.
         print(f"{'Ticket ID':<12}: {ticket['Ticket ID']}")    
         print(f"{'Priority':<12}: {ticket['Priority']}")    
         print(f"{'Application':<12}: {ticket['Application']}")  
         print(f"{'Description':<12}: {ticket['Description']}")  
+        print(f"{'Category':<12}: {ticket['Category']}")
+        print(f"{'Potential Impact':<12}: {ticket['Potential Impact']}")
         print()
                    
       
