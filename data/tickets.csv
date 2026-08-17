@@ -2,3 +2,4 @@ Ticket ID,Priority,Application,Description
 INC-1001,High,Payment System,"Users are unable to submit payment transactions. The application returns an error after clicking Submit."
 INC-1002,Medium,HR Portal,"User cannot download the monthly payslip from the HR portal."
 INC-1003,Low,Email System,"User requested assistance with configuring an email signature."
+INC-1004,Medium,ERP,"Users are unable to view orders."

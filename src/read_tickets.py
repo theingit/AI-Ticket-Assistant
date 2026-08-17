@@ -1,5 +1,5 @@
 """
-AI Ticket Assistant v0.1
+AI Ticket Assistant v0.2
 
 Purpose:
 - Read the tickets exported via ITSM.
@@ -12,9 +12,12 @@ Author: LN
 """
 import csv
 from pathlib import Path
+from collections import Counter
+
 # Define required column headers
 REQUIRED_FIELDS = ["Ticket ID", "Priority", "Application", "Description"]
 TICKET_PRIORITIES = ("High", "Medium", "Low")
+CRITICAL_APPS = {"crm", "erp", "payment system", "production"} 
 #TICKET_CATEGORY = ("Payment Issue", "HR / Payroll", "Email Support", "OTHER")
 
 # Read the ticket file, validate and return ticket records.
@@ -69,7 +72,7 @@ def validate_and_parse_csv(ticket_file_path: Path):
                 valid_tickets.append(valid_ticket)
                     
 
-        print("All CSV data validations passed!\n")             
+        #print("All CSV data validations passed!\n")             
         return valid_tickets
        
 
@@ -84,6 +87,9 @@ def categorize_ticket(description):
     # 1. Check for Payment Issue
     if any(keyword in desc_lower for keyword in ("payment", "transaction", "submit")):    
         return "Payment Issue"
+
+    if any(keyword in desc_lower for keyword in ("erp", "orders")):    
+            return "ERP System Issue"
 
     # 2. Check for HR / Payroll system issues    
     elif any(keyword in desc_lower for keyword in ("payslip", "salary", "hr")):    
@@ -118,8 +124,8 @@ def determine_potential_impact(priority, application, description):
     desc_lower = description.lower()
 
     # 1. CRITICAL IMPACT: High priority on core business systems or major outages
-    critical_apps = {"crm", "erp", "payment system", "production"} #must be small letter bcoz desc.lower()
-    is_core_app = application.lower() in critical_apps
+    #critical_apps = {"crm", "erp", "payment system", "production"} #must be small letter bcoz desc.lower()
+    is_core_app = application.lower() in CRITICAL_APPS
     is_outage = "multiple users" in desc_lower or "down" in desc_lower or "outage" in desc_lower or "crash" in desc_lower
     
     if priority == "High" and (is_core_app or is_outage):
@@ -137,6 +143,65 @@ def determine_potential_impact(priority, application, description):
     else:
         return "Low"
 
+def generate_report(tickets):
+
+    # 1. Print the summary     
+    priorities = [ticket["Priority"] for ticket in tickets]
+    priority_counts = Counter(priorities)
+    total_tickets = len(tickets)
+
+    
+    print("Ticket Summary")
+    print("--------------------------------")
+    print(f"Total Tickets : {total_tickets}")
+    print(f"High Priority : {priority_counts['High']}")
+    print(f"Medium        : {priority_counts['Medium']}")
+    print(f"Low           : {priority_counts['Low']}")  
+    print("--------------------------------")        
+
+    # 2. Categorize tickets, determine potential impact, and display the analysis.
+    for ticket in tickets:
+            
+            #print(ticket) #print(ticket) prints data as dictionary    
+            
+            #Call categorize_ticket to categorize the ticket.
+            ticket["Category"] = categorize_ticket(ticket["Description"])
+    
+            #Call determine_potential_impact to determine the impact
+            ticket["Potential Impact"] = determine_potential_impact(
+                priority=ticket["Priority"],
+                application=ticket["Application"],
+                description=ticket["Description"]        
+            )
+
+            ticket["Recommended Action"] = Recommended_action(impact=ticket["Potential Impact"])
+            
+            # Display the enhanced ticket information.
+            print(f"{'Ticket ID':<20}: {ticket['Ticket ID']}")    
+            print(f"{'Priority':<20}: {ticket['Priority']}")    
+            print(f"{'Application':<20}: {ticket['Application']}")          
+            print(f"{'Category':<20}: {ticket['Category']}")
+            print(f"{'Potential Impact':<20}: {ticket['Potential Impact']}")
+            print(f"{'Recommended Action':<20}: {ticket['Recommended Action']}")
+            print()
+            print(f"{'Description':<20}:\n{ticket['Description']}")  
+            print()
+
+def Recommended_action(impact):
+    desc_impact = impact.lower()
+
+    if desc_impact == "critical":
+        return "Escalate immediately"
+
+    elif desc_impact == "high":
+        return "Prioritize for investigation"
+
+    elif desc_impact == "medium":
+        return "Investigate within normal SLA"
+
+    else:
+        return "Handle as standard service request"
+    
 def main():   
 
     # Get the directory of the currently running script (src/)
@@ -148,7 +213,7 @@ def main():
     
     # 1. Display the header.
     print("=" * 34)
-    print(" AI Ticket Assistant v0.1")
+    print(" AI Ticket Assistant v0.2")
     print("=" * 34)
     print()  
 
@@ -157,29 +222,11 @@ def main():
            
     if tickets is None:
         return
-    
-    # 3. Categorize tickets, determine potential impact, and display the analysis.
-    for ticket in tickets:
-        #print(ticket) #print(ticket) prints data as dictionary    
-        
-        #Call categorize_ticket to categorize the ticket.
-        ticket["Category"] = categorize_ticket(ticket["Description"])
 
-        #Call determine_potential_impact to determine the impact
-        ticket["Potential Impact"] = determine_potential_impact(
-            priority=ticket["Priority"],
-            application=ticket["Application"],
-            description=ticket["Description"]        
-        )
-        
-        # Display the enhanced ticket information.
-        print(f"{'Ticket ID':<12}: {ticket['Ticket ID']}")    
-        print(f"{'Priority':<12}: {ticket['Priority']}")    
-        print(f"{'Application':<12}: {ticket['Application']}")  
-        print(f"{'Description':<12}: {ticket['Description']}")  
-        print(f"{'Category':<12}: {ticket['Category']}")
-        print(f"{'Potential Impact':<12}: {ticket['Potential Impact']}")
-        print()
+    # 3. generate report
+    generate_report(tickets)
+    
+    
                    
       
 # Standard entry point to run the program
