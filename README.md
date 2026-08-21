@@ -61,6 +61,7 @@ cd AI_Ticket_Assistant
 python src/read_tickets.py
 
 ## Sample Output
+```text
 ==================================
  AI Ticket Assistant v0.3
 ==================================
@@ -112,6 +113,7 @@ Tickets Requiring Attention
 --------------------------------
 INC-1001 - Critical - Payment Issue
 INC-1005 - Critical - Database
+```
 
 ## Future Improvements
 Planned improvements may include:
