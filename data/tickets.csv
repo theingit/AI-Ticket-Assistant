@@ -3,3 +3,19 @@ INC-1001,High,Payment System,"Users are unable to submit payment transactions. T
 INC-1002,Medium,HR Portal,"User cannot download the monthly payslip from the HR portal."
 INC-1003,Low,Email System,"User requested assistance with configuring an email signature."
 INC-1004,Medium,ERP,"Users are unable to view orders."
+INC-1005,High,Production,"Users are encountering connection timeout issue."
+INC-1006,Medium,HR Portal,"Unable to export monthly statement in HR portal."
+INC-1007,,Payment System,"Users cannot make payments."
+INC-1008,Urgent,HR Portal,"User cannot access payslip."
+INC-1009,Medium,,"Users cannot view employee information."
+INC-1010,High,Production,
+INC-1011,,Email System,
+INC-1012,Urgent,HR Portal,
+INC-1013,Low,,
+INC-1014,,,
+INC-1015,,,
+INC-1016,,,
+INC-1017,,,
+INC-1018,,,
+INC-1019,Low,Email System,"Unable to send email."
+INC-1020,Low,CRM,"Users are unable to login."
