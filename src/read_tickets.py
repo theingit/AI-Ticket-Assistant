@@ -1,16 +1,19 @@
 """
-AI Ticket Assistant v0.3
+AI Ticket Assistant v1.0
 
 Purpose:
-- Read the tickets exported via ITSM.
-- Print the ticket records.
-
+- Read and validate tickets exported from an ITSM system.
+- Process valid tickets for classification and impact analysis.
+- Generate recommended actions and AI-assisted ticket summaries.
+- Produce operational reports for IT support teams.
 
 Author: Thein
 """
 import csv
 from pathlib import Path
 from collections import Counter
+from prompt_builder import build_summary_prompt
+from mock_llm import generate_ai_summary
 
 # Define required column headers
 REQUIRED_FIELDS = ["Ticket ID", "Priority", "Application", "Description"]
@@ -280,7 +283,10 @@ def generate_reports(tickets):
         print(f"{'Potential Impact':<20}: {ticket['Potential Impact']}")
         print(f"{'Recommended Action':<20}: {ticket['Recommended Action']}")
         print()
-        print(f"{'Description':<20}:\n{ticket['Description']}")  
+        #print(f"{'Description':<20}:\n{ticket['Description']}")  
+        prompt = build_summary_prompt(ticket)
+        summary = generate_ai_summary(prompt) #later, to call openai api
+        print(f"{'AI Summary':<20}:\n{summary}") 
         print()
          
 def Recommended_action(impact):
@@ -309,7 +315,7 @@ def main():
     
     # 1. Display the header.
     print("=" * 34)
-    print(" AI Ticket Assistant v0.3")
+    print(" AI Ticket Assistant v1.0")
     print("=" * 34)
     print()  
 
